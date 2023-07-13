@@ -3,10 +3,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 const mongoose = require("mongoose");
-// const encrypt = require("mongoose-encryption");
-// const md5 = require("md5");
-// const bcrypt = require("bcrypt");
-// const saltRounds = 10;
 const session = require("express-session");
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
@@ -43,30 +39,21 @@ mongoose.connect("mongodb://127.0.0.1:27017/userDB", {
 const userSchema = new mongoose.Schema({
   email: String,
   password: String,
-  googleId: String,
+  googleId: String, //for google auth
 });
 
-//plugin passport local mongoose
+//plugin passport local mongooseF
 userSchema.plugin(passportLocalMongoose);
 // plugin mongoose findorcreate to adapt google auth
 userSchema.plugin(findOrCreate);
-
-// //password encryption
-// userSchema.plugin(encrypt, {
-//   secret: process.env.SECRET,
-//   encryptedFields: ["password"],
-// });
 
 const User = mongoose.model("User", userSchema);
 
 //passport configuration
 passport.use(User.createStrategy());
-// passport.serializeUser(User.serializeUser());
-// passport.deserializeUser(User.deserializeUser());
 passport.serializeUser(function (user, done) {
   done(null, user);
 });
-
 passport.deserializeUser(function (user, done) {
   done(null, user);
 });
@@ -134,41 +121,6 @@ app.post("/login", (req, res) => {
   });
 });
 
-// app.post("/login", (req, res) => {
-//   const username = req.body.username;
-//   // const password = md5(req.body.password);  //hash password
-//   const password = req.body.password;
-
-//   //find user in database by username(email)
-//   User.findOne({ email: username })
-//     .then((foundUser) => {
-//       //if found a matching user
-//       if (foundUser) {
-//         //check password
-//         bcrypt.compare(password, foundUser.password, function (err, result) {
-//           if (result === true) {
-//             res.render("secrets");
-//           } else {
-//             //display error message to user
-//             res.render("login", {
-//               username: username,
-//               password: password,
-//               errorMessage: "Incorrect username or password.",
-//             });
-//           }
-//         });
-//       } else {
-//         //if no user matches
-//         res.render("login", {
-//           username: username,
-//           password: password,
-//           errorMessage: "Username does not exist.",
-//         });
-//       }
-//     })
-//     .catch((err) => console.log(err));
-// });
-
 //Get - Logout page
 app.get("/logout", (req, res) => {
   req.logout((err) => {
@@ -204,26 +156,6 @@ app.post("/register", (req, res) => {
     }
   );
 });
-
-// app.post("/register", (req, res) => {
-//   bcrypt.hash(req.body.password, saltRounds, function (error, hash) {
-//     //create new user obj base on user input value
-//     const newUser = new User({
-//       email: req.body.username,
-//       // password: md5(req.body.password),  //hash password
-//       password: hash,
-//     });
-
-//     //save new user to database
-//     newUser
-//       .save()
-//       .then(() => {
-//         //navigate to secret page
-//         res.render("secrets");
-//       })
-//       .catch((err) => console.log(err));
-//   });
-// });
 
 //Get - Secrets page
 app.get("/secrets", (req, res) => {
